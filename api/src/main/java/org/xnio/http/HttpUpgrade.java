@@ -21,6 +21,7 @@ package org.xnio.http;
 import static org.xnio.IoUtils.safeClose;
 import static org.xnio._private.Messages.msg;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -413,7 +414,7 @@ public class HttpUpgrade {
                             channel.resumeReads();
                             return;
                         } else if (r == -1) {
-                            throw msg.connectionClosedEarly();
+                            throw new ConnectionClosedEarlyException(msg.connectionClosedEarly().getMessage());
                         }
                         buffer.flip();
                         parser.parse(buffer);
@@ -523,6 +524,11 @@ public class HttpUpgrade {
             public void handleCancelled(Object attachment) {
                 future.setCancelled();
             }
+        }
+    }
+    public static class ConnectionClosedEarlyException extends EOFException {
+        public ConnectionClosedEarlyException(String s) {
+            super(s);
         }
     }
 }
